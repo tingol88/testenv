@@ -2,18 +2,23 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Fullstack JS Demo</title>
+  <title>Лунный календарь</title>
 </head>
 <body>
-  <h1>Fullstack приложение на Render</h1>
-  <button id="btn">Получить привет от backend</button>
-  <p id="output"></p>
-
+  <h1>Лунный календарь</h1>
+  <button onclick="getMoon()">Показать на сегодня и завтра</button>
+  <div>
+    <strong>Сегодня:</strong> <span id="today"></span>
+  </div>
+  <div>
+    <strong>Завтра:</strong> <span id="tomorrow"></span>
+  </div>
   <script>
-    document.getElementById('btn').onclick = async () => {
-      const res = await fetch('/api/hello');
+    async function getMoon() {
+      const res = await fetch('/api/moon');
       const data = await res.json();
-      document.getElementById('output').textContent = data.message;
+      document.getElementById('today').textContent = data.today;
+      document.getElementById('tomorrow').textContent = data.tomorrow;
     }
   </script>
 </body>
