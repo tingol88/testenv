@@ -1,15 +1,45 @@
-const express = require('express');
-const path = require('path');
+import express from "express";
+import fetch from "node-fetch";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
+const PORT = 3000;
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-// Пример API
-app.get('/api/hello', (req, res) => {
-  res.json({ message: 'Привет из backend!' });
+async function getMoonPhase(date) {
+  // Получаем timestamp (UTC) в секундах
+  const timestamp = Math.floor(new Date(date).getTime() / 1000);
+  const url = `https://api.farmsense.net/v1/moonphases/?d=${timestamp}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    return data[0]?.Phase || "Неизвестно";
+  } catch {
+    return "Ошибка";
+  }
+}
+
+app.get("/api/moon", async (req, res) => {
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+
+  const [todayPhase, tomorrowPhase] = await Promise.all([
+    getMoonPhase(today),
+    getMoonPhase(tomorrow)
+  ]);
+
+  res.json({
+    today: todayPhase,
+    tomorrow: tomorrowPhase
+  });
 });
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  console.log(`Сервер: http://localhost:${PORT}`);
 });
