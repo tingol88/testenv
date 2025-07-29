@@ -1,1 +1,20 @@
-print "Hello World"
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Fullstack JS Demo</title>
+</head>
+<body>
+  <h1>Fullstack приложение на Render</h1>
+  <button id="btn">Получить привет от backend</button>
+  <p id="output"></p>
+
+  <script>
+    document.getElementById('btn').onclick = async () => {
+      const res = await fetch('/api/hello');
+      const data = await res.json();
+      document.getElementById('output').textContent = data.message;
+    }
+  </script>
+</body>
+</html>
