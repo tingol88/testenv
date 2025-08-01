@@ -2,18 +2,15 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Для поддержки ES-модулей и __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Отдаём статику
 app.use(express.static(path.join(__dirname, "public")));
 
-// Функция определения фазы луны
-function getMoonPhase(date = new Date()) {
+function getMoonPhaseDetails(date = new Date()) {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
@@ -33,32 +30,51 @@ function getMoonPhase(date = new Date()) {
   b = b - Math.floor(b);
   if (b < 0) b += 1;
 
-  if (b < 0.03 || b > 0.97) return "Новолуние";
-  if (b < 0.22) return "Молодая луна (растущая)";
-  if (b < 0.28) return "Первая четверть";
-  if (b < 0.47) return "Почти полнолуние (растущая)";
-  if (b < 0.53) return "Полнолуние";
-  if (b < 0.72) return "Убывающая луна";
-  if (b < 0.78) return "Последняя четверть";
-  return "Старая луна (убывающая)";
+  let phase, description;
+  if (b < 0.03 || b > 0.97) {
+    phase = "Новолуние";
+    description = "Время новых начинаний и планирования. Не перегружайте себя, настройтесь на внутренний покой.";
+  } else if (b < 0.22) {
+    phase = "Молодая луна (растущая)";
+    description = "Подходит для начала новых дел, обучения, привлечения ресурсов. Ваша энергия на подъёме.";
+  } else if (b < 0.28) {
+    phase = "Первая четверть";
+    description = "Преодолевайте препятствия, активно реализуйте планы. Хорошо решать вопросы, требующие решимости.";
+  } else if (b < 0.47) {
+    phase = "Почти полнолуние (растущая)";
+    description = "Динамичный период, энергия на максимуме. Самое время продвигать проекты и общаться.";
+  } else if (b < 0.53) {
+    phase = "Полнолуние";
+    description = "Пик эмоциональности и активности. Не перегружайте себя, следите за эмоциональным состоянием.";
+  } else if (b < 0.72) {
+    phase = "Убывающая луна";
+    description = "Завершайте дела, очищайте пространство, избавляйтесь от лишнего. Умерьте темп.";
+  } else if (b < 0.78) {
+    phase = "Последняя четверть";
+    description = "Пора анализа и исправления ошибок. Завершайте незаконченные дела, стройте планы.";
+  } else {
+    phase = "Старая луна (убывающая)";
+    description = "Подходит для отдыха, расслабления и восстановления. Время заботы о себе.";
+  }
+  return { phase, description };
 }
 
-// API для фаз луны
 app.get("/api/moon", (req, res) => {
-  const today = new Date();
-  const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
-
-  const todayPhase = getMoonPhase(today);
-  const tomorrowPhase = getMoonPhase(tomorrow);
+  let date = new Date();
+  if (req.query.date) {
+    // Ожидает yyyy-mm-dd
+    date = new Date(req.query.date);
+    if (isNaN(date)) date = new Date();
+  }
+  const { phase, description } = getMoonPhaseDetails(date);
 
   res.json({
-    today: todayPhase,
-    tomorrow: tomorrowPhase
+    date: date.toISOString().slice(0,10),
+    phase,
+    description
   });
 });
 
-// Запуск сервера
 app.listen(PORT, () => {
   console.log(`Сервер запущен: http://localhost:${PORT}`);
 });
