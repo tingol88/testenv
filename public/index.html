@@ -3,22 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <title>Лунный календарь</title>
+  <style>
+    body { font-family: sans-serif; }
+    .moon-block { margin-top: 20px; padding: 15px; background: #f7f7fa; border-radius: 10px; max-width: 400px;}
+    label { font-weight: bold;}
+  </style>
 </head>
 <body>
-  <h1>Лунный календарь</h1>
-  <button onclick="getMoon()">Показать на сегодня и завтра</button>
-  <div>
-    <strong>Сегодня:</strong> <span id="today"></span>
+  <h1>🌙 Лунный календарь</h1>
+  <label for="datepick">Выберите дату:</label>
+  <input type="date" id="datepick" />
+  <button onclick="getMoon()">Показать прогноз</button>
+
+  <div id="mooninfo" class="moon-block" style="display:none;">
+    <h3 id="moon-phase"></h3>
+    <p id="moon-description"></p>
+    <small id="moon-date"></small>
   </div>
-  <div>
-    <strong>Завтра:</strong> <span id="tomorrow"></span>
-  </div>
+
   <script>
+    function formatDateISO(date) {
+      return date.toISOString().slice(0,10);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Установим дату по умолчанию - сегодня
+      const today = new Date();
+      document.getElementById('datepick').value = formatDateISO(today);
+    });
+
     async function getMoon() {
-      const res = await fetch('/api/moon');
+      const date = document.getElementById('datepick').value;
+      const res = await fetch('/api/moon?date=' + date);
       const data = await res.json();
-      document.getElementById('today').textContent = data.today;
-      document.getElementById('tomorrow').textContent = data.tomorrow;
+      document.getElementById('moon-phase').textContent = "Фаза: " + data.phase;
+      document.getElementById('moon-description').textContent = data.description;
+      document.getElementById('moon-date').textContent = "Дата: " + data.date;
+      document.getElementById('mooninfo').style.display = "block";
     }
   </script>
 </body>
